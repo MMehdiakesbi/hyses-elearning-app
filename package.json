@@ -1,0 +1,32 @@
+{
+  "name": "hyses-elearning",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plateforme e-learning HYSES — Formation Habilitation electrique B0 H0V (NF C 18-510). MVP client AKIEM, base reutilisable pour SAFETY SIMPLE.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "create-user": "node scripts/create-user.mjs",
+    "create-users": "node scripts/create-users-bulk.mjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.2",
+    "jspdf": "^2.5.2",
+    "jszip": "^3.10.1",
+    "next": "^16.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "resend": "^4.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.2.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

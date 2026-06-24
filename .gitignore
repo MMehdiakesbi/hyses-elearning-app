@@ -1,0 +1,31 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# env files (NE JAMAIS COMMITTER LES CLES)
+.env
+.env.local
+.env*.local
+
+# vercel
+.vercel
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.idea
+.vscode/*
+!.vscode/extensions.json
+# vidéos (hébergées sur Supabase, pas besoin de les versionner)
+/public/videos
