@@ -589,3 +589,129 @@ h1.title .sym { color: var(--gold-deep); }
   .hv-stats-grid > div:nth-child(3) { border-left: 0; }
   .hv-foot-bottom { flex-direction: column; }
 }
+
+/* =====================================================================
+   MODE SOMBRE — activé via <html data-theme="dark">
+   On ne redéfinit que les variables de couleur : tout le reste suit.
+   ===================================================================== */
+html[data-theme="dark"] {
+  --ink: #e9e6df;
+  --ink-soft: #c2c0ba;
+  --mute: #9aa0a8;
+  --paper: #15171a;
+  --paper-2: #1e2226;
+  --card: #20242a;
+  --gold: #e8b53a;
+  --gold-deep: #c98f1a;
+  --danger: #e5564b;
+  --safe: #4cae76;
+  --line: rgba(255, 255, 255, 0.16);
+  --line-soft: rgba(255, 255, 255, 0.07);
+}
+html[data-theme="dark"] body {
+  color: var(--ink);
+}
+/* =====================================================================
+   Contrôles flottants (langue + thème) — haut à droite, look "futuriste"
+   Pastille en verre dépoli, arrondie, halo doré au survol.
+   ===================================================================== */
+.site-controls {
+  position: fixed;
+  top: 14px;
+  right: 16px;
+  z-index: 9999;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 7px;
+  border-radius: 999px;
+  background: var(--card);
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 30px rgba(22, 24, 26, 0.18);
+  -webkit-backdrop-filter: blur(12px) saturate(1.15);
+  backdrop-filter: blur(12px) saturate(1.15);
+}
+.ctrl-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--line);
+  margin: 0 2px;
+}
+/* Bouton thème (dans le groupe) */
+.theme-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--ink);
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  font-size: 15px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+.theme-btn:hover {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 22%, transparent);
+  transform: translateY(-1px);
+}
+/* Bloc langue (Google) dans le groupe */
+.gt-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  transition: box-shadow 0.15s ease;
+}
+.gt-box::before {
+  content: '🌐';
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.85;
+}
+.gt-box:hover {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 22%, transparent);
+}
+/* Masquer l'habillage Google inutile */
+.goog-te-banner-frame,
+.skiptranslate > iframe {
+  display: none !important;
+}
+body {
+  top: 0 !important;
+  position: static !important;
+}
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+.goog-logo-link,
+.goog-te-gadget img {
+  display: none !important;
+}
+.goog-te-gadget {
+  font-size: 0 !important;
+  color: transparent !important;
+  line-height: 1 !important;
+}
+.goog-te-gadget .goog-te-combo {
+  margin: 0 !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  padding: 6px 4px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--ink) !important;
+  cursor: pointer !important;
+  outline: none !important;
+}
