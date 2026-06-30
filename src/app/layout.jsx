@@ -1,6 +1,7 @@
 import './globals.css';
 import Script from 'next/script';
 import ThemeToggle from '@/components/ThemeToggle';
+import LangSwitcher from '@/components/LangSwitcher';
 
 export const metadata = {
   title: 'HYSES \u2014 Formation Habilitation electrique B0 H0V',
@@ -14,9 +15,8 @@ const themeScript = `(function(){try{var t=localStorage.getItem('hyses-theme');i
 // Protège React des plantages provoqués par la traduction automatique.
 const reactTranslateFix = `(function(){if(typeof Node==='function'&&Node.prototype){var r=Node.prototype.removeChild;Node.prototype.removeChild=function(c){if(c&&c.parentNode!==this){return c;}return r.apply(this,arguments);};var i=Node.prototype.insertBefore;Node.prototype.insertBefore=function(n,ref){if(ref&&ref.parentNode!==this){return n;}return i.apply(this,arguments);};}})();`;
 
-// Widget Google Traduction : TOUTES les langues disponibles (anglais, espagnol,
-// arabe, allemand, russe, chinois, etc.). Menu déroulant simple.
-const gtInit = `window.googleTranslateElementInit=function(){new window.google.translate.TranslateElement({pageLanguage:'fr',layout:window.google.translate.TranslateElement.InlineLayout.SIMPLE,autoDisplay:false},'google_translate_element');};`;
+// Initialise le moteur Google Traduction (caché ; piloté par cookie depuis le sélecteur).
+const gtInit = `window.googleTranslateElementInit=function(){new window.google.translate.TranslateElement({pageLanguage:'fr',autoDisplay:false},'google_translate_element');};`;
 
 export default function RootLayout({ children }) {
   return (
@@ -27,9 +27,10 @@ export default function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: gtInit }} />
       </head>
       <body suppressHydrationWarning>
-        {/* Contrôles en haut à droite : langue (Google, stylé) + thème */}
+        {/* Contrôles en haut à droite : langue (design custom) + thème */}
         <div className="site-controls">
-          <div id="google_translate_element" className="gt-box" />
+          <div id="google_translate_element" aria-hidden="true" />
+          <LangSwitcher />
           <ThemeToggle />
         </div>
         {children}

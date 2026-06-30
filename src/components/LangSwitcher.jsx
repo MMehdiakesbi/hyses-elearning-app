@@ -2,24 +2,28 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-// Langues proposées. "code" = code Google Translate.
+// Langues du menu (code = code Google Translate).
 const LANGS = [
   { code: 'fr', label: 'Français', flag: '🇫🇷' },
   { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'ar', label: 'العربية', flag: '🇹🇳' },
   { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'ar', label: 'العربية', flag: '🇹🇳' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+  { code: 'ru', label: 'Русский', flag: '🇷🇺' },
+  { code: 'zh-CN', label: '中文', flag: '🇨🇳' },
 ];
 
-// Pilote le menu Google (caché) pour traduire la page.
-function applyGoogleLang(code, attempt = 0) {
-  const combo = document.querySelector('.goog-te-combo');
-  if (combo) {
-    combo.value = code;
-    combo.dispatchEvent(new Event('change'));
-  } else if (attempt < 25) {
-    // Le widget Google peut mettre 1-2 s à se charger : on réessaie.
-    setTimeout(() => applyGoogleLang(code, attempt + 1), 150);
-  }
+// Pose le cookie de Google Traduction (méthode fiable). /fr/<cible>.
+function setGoogTrans(target) {
+  const host = window.location.hostname;
+  const base = host.replace(/^www\./, '');
+  const isFr = target === 'fr';
+  const val = isFr ? '' : '/fr/' + target;
+  const expire = isFr ? '; expires=Thu, 01 Jan 1970 00:00:00 GMT' : '';
+  // On pose (ou supprime) le cookie sur plusieurs portées pour être sûr.
+  document.cookie = 'googtrans=' + val + '; path=/' + expire;
+  document.cookie = 'googtrans=' + val + '; path=/; domain=' + host + expire;
+  document.cookie = 'googtrans=' + val + '; path=/; domain=.' + base + expire;
 }
 
 export default function LangSwitcher() {
@@ -27,7 +31,17 @@ export default function LangSwitcher() {
   const [current, setCurrent] = useState('fr');
   const ref = useRef(null);
 
-  // Fermer au clic en dehors
+  // Restaurer la langue mémorisée (juste l'étiquette ; la page est déjà traduite par le cookie)
+  useEffect(() => {
+    let saved = 'fr';
+    try {
+      saved = localStorage.getItem('hyses-lang') || 'fr';
+    } catch {}
+    setCurrent(saved);
+    if (saved !== 'fr') setGoogTrans(saved); // garde le cookie cohérent
+  }, []);
+
+  // Fermer au clic extérieur
   useEffect(() => {
     function onDoc(e) {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
@@ -36,31 +50,19 @@ export default function LangSwitcher() {
     return () => document.removeEventListener('click', onDoc);
   }, []);
 
-  // Restaurer la langue mémorisée au chargement
-  useEffect(() => {
-    let saved = 'fr';
-    try {
-      saved = localStorage.getItem('hyses-lang') || 'fr';
-    } catch {}
-    if (saved !== 'fr') {
-      setCurrent(saved);
-      applyGoogleLang(saved);
-    }
-  }, []);
-
   function choose(code) {
-    setCurrent(code);
     setOpen(false);
     try {
       localStorage.setItem('hyses-lang', code);
     } catch {}
-    applyGoogleLang(code);
+    setGoogTrans(code);
+    // Recharge : Google applique la traduction proprement au chargement.
+    window.location.reload();
   }
 
   const cur = LANGS.find((l) => l.code === current) || LANGS[0];
 
   return (
-    // notranslate : empêche Google de traduire les noms de langues du menu
     <div className={'lang-selector notranslate' + (open ? ' open' : '')} translate="no" ref={ref}>
       <button
         type="button"
