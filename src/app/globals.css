@@ -612,8 +612,7 @@ html[data-theme="dark"] body {
   color: var(--ink);
 }
 /* =====================================================================
-   Contrôles (langue + thème) — haut à droite.
-   Le menu Google natif (fiable), habillé en pastille dorée.
+   Contrôles flottants (langue + thème) — haut à droite, design neon doré
    ===================================================================== */
 .site-controls {
   position: fixed;
@@ -625,89 +624,152 @@ html[data-theme="dark"] body {
   gap: 10px;
 }
 
-/* Pastille autour du menu Google */
-.gt-box {
-  display: inline-flex;
+/* Le widget Google est gardé actif mais caché (il pilote la traduction) */
+#google_translate_element {
+  position: absolute !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ---- Sélecteur de langue personnalisé ---- */
+.lang-selector {
+  position: relative;
+  font-family: 'Space Mono', monospace;
+}
+.lang-btn {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  height: 40px;
-  padding: 0 8px 0 12px;
-  background: var(--card);
-  border: 1px solid rgba(245, 166, 35, 0.5);
-  border-radius: 10px;
-  box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.08), 0 6px 18px rgba(0, 0, 0, 0.18);
-  transition: border-color 0.18s, box-shadow 0.18s;
+  gap: 10px;
+  background: rgba(20, 20, 24, 0.85);
+  border: 1px solid rgba(245, 166, 35, 0.45);
+  color: #f5d9a8;
+  padding: 9px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.08), inset 0 0 14px rgba(245, 166, 35, 0.1);
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s;
+  position: relative;
+  overflow: hidden;
 }
-.gt-box::before {
-  content: '🌐';
-  font-size: 14px;
-  line-height: 1;
+.lang-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(245, 166, 35, 0.18), transparent);
+  transform: skewX(-20deg);
+  transition: left 0.5s;
 }
-.gt-box:hover {
+.lang-btn:hover {
   border-color: rgba(245, 166, 35, 0.95);
-  box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.22), 0 0 16px rgba(245, 166, 35, 0.32);
+  box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.25), 0 0 18px rgba(245, 166, 35, 0.35);
+  color: #ffe6bd;
+}
+.lang-btn:hover::before {
+  left: 120%;
+}
+.lang-btn:active {
+  transform: translateY(1px);
+}
+.lang-globe {
+  color: #f5a623;
+  display: flex;
+  align-items: center;
+}
+.lang-chevron {
+  color: #f5a623;
+  display: flex;
+  align-items: center;
+  transition: transform 0.2s;
+}
+.lang-selector.open .lang-chevron {
+  transform: rotate(180deg);
+}
+.lang-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 190px;
+  background: rgba(14, 14, 17, 0.97);
+  border: 1px solid rgba(245, 166, 35, 0.35);
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6), 0 0 16px rgba(245, 166, 35, 0.12);
+  padding: 5px;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+  pointer-events: none;
+  transition: all 0.18s;
+  z-index: 50;
+}
+.lang-selector.open .lang-menu {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.lang-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 11px;
+  color: #cfcfd4;
+  font-size: 12.5px;
+  letter-spacing: 0.4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.14s, color 0.14s;
+}
+.lang-item:hover {
+  background: rgba(245, 166, 35, 0.12);
+  color: #ffe6bd;
+}
+.lang-item.active {
+  color: #f5a623;
+}
+.lang-item .dot {
+  margin-left: auto;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f5a623;
+  box-shadow: 0 0 8px #f5a623;
+  opacity: 0;
+}
+.lang-item.active .dot {
+  opacity: 1;
 }
 
-/* Le <select> Google lui-même, stylé */
-.goog-te-gadget {
-  display: flex !important;
-  align-items: center !important;
-  font-size: 0 !important;
-  color: transparent !important;
-  line-height: 1 !important;
-}
-.goog-te-combo {
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  margin: 0 !important;
-  height: 38px !important;
-  padding: 0 24px 0 4px !important;
-  font-family: 'Space Mono', monospace !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.3px;
-  color: var(--ink) !important;
-  background-color: transparent !important;
-  border: 0 !important;
-  outline: none !important;
-  cursor: pointer !important;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23f5a623' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") !important;
-  background-repeat: no-repeat !important;
-  background-position: right 2px center !important;
-  background-size: 14px 14px !important;
-}
-/* Lisibilité des options dans le menu déroulant du système */
-.goog-te-combo option {
-  color: #16181a;
-  background: #ffffff;
-}
-
-/* Bouton thème, même style neon doré */
+/* ---- Bouton thème, harmonisé au même style neon ---- */
 .theme-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: var(--card);
-  border: 1px solid rgba(245, 166, 35, 0.5);
+  background: rgba(20, 20, 24, 0.85);
+  border: 1px solid rgba(245, 166, 35, 0.45);
   color: #f5a623;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 17px;
   cursor: pointer;
-  box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.08), 0 6px 18px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.08), inset 0 0 14px rgba(245, 166, 35, 0.1);
   transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s;
 }
 .theme-btn:hover {
   border-color: rgba(245, 166, 35, 0.95);
-  box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.22), 0 0 16px rgba(245, 166, 35, 0.32);
+  box-shadow: 0 0 0 1px rgba(245, 166, 35, 0.25), 0 0 18px rgba(245, 166, 35, 0.35);
 }
 .theme-btn:active {
   transform: translateY(1px);
 }
 
-/* Masquer l'habillage Google résiduel */
+/* Masquer l'habillage Google résiduel (bannière en haut) */
 .goog-te-banner-frame,
 .skiptranslate > iframe {
   display: none !important;
@@ -723,8 +785,4 @@ body {
 .goog-text-highlight {
   background: none !important;
   box-shadow: none !important;
-}
-.goog-logo-link,
-.goog-te-gadget img {
-  display: none !important;
 }
