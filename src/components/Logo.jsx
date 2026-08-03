@@ -1,4 +1,4 @@
-export default function Logo({ size = 26, color = '#d9a328' }) {
+export default function Logo({ size = 26, color = '#4f46e5' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 2 L22 20 H2 Z" stroke={color} strokeWidth="2.2" strokeLinejoin="round" />

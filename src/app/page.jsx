@@ -186,13 +186,13 @@ export default async function HomePage() {
           <aside className="hv-inscrire">
             <h3>Inscrire vos salariés</h3>
             <p>Tarifs entreprise, sessions intra et inter, suivi des attestations. Réponse sous 24 h ouvrées.</p>
-            <p style={{ color: '#cfc6b3', fontSize: 13, marginBottom: 16 }}>
+            <p style={{ color: 'var(--band-mute)', fontSize: 13, marginBottom: 16 }}>
               Téléchargez le formulaire d'inscription, remplissez une ligne par stagiaire (prénom, nom,
               fonction, société, email), puis renvoyez-le-nous par email.
             </p>
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
               <a href="mailto:Contact.hyses@gmail.com?subject=Inscription%20formation%20B0%20H0V&body=Bonjour%2C%0A%0AJe%20souhaite%20inscrire%20des%20stagiaires%20%C3%A0%20la%20formation%20B0%20H0V.%0AVous%20trouverez%20ci-joint%20le%20formulaire%20d%27inscription%20rempli.%0A%0ACordialement%2C" className="hv-btn gold">Contacter HYSES →</a>
-              <a href="/Formulaire_inscription_stagiaires_HYSES.xlsx" download style={{ color: 'var(--gold)', textDecoration: 'underline', fontWeight: 600, fontSize: 14 }}>
+              <a href="/Formulaire_inscription_stagiaires_HYSES.xlsx" download style={{ color: 'var(--band-ink)', textDecoration: 'underline', fontWeight: 600, fontSize: 14 }}>
                 📄 Télécharger le formulaire (Excel)
               </a>
             </div>

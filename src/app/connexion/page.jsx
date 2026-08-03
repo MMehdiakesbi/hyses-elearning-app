@@ -15,7 +15,7 @@ export default async function ConnexionPage() {
     <>
       <header className="bar">
         <div className="bar-in">
-          <Link className="logo" href="/" style={{ color: 'var(--paper)', textDecoration: 'none' }}>
+          <Link className="logo" href="/" style={{ color: 'inherit', textDecoration: 'none' }}>
             <Logo />
             <div>
               HYSES<small>SÉCURITÉ &amp; PRÉVENTION</small>

@@ -144,44 +144,31 @@ export default function LocalVideoPlayer({ src, onComplete, endAt = 0 }) {
 
   return (
     <div className="ytwrap">
-      <div
-        className="ytframe"
-        ref={frameRef}
-        style={{ position: 'relative', width: '100%', aspectRatio: '16 / 9', background: '#000', borderRadius: 3, overflow: 'hidden' }}
-      >
+      <div className="ytframe" ref={frameRef}>
         <video
           ref={videoRef}
           src={src}
           playsInline
           preload="metadata"
           onContextMenu={(e) => e.preventDefault()}
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', background: '#000' }}
         />
         <button
           type="button"
+          className={'ytcover' + (playing ? ' playing' : '')}
           onClick={togglePlay}
           aria-label={playing ? 'Pause' : 'Lecture'}
-          style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0,
-            background: playing ? 'transparent' : 'rgba(0,0,0,0.25)', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
         >
           {!playing && (
-            <span style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--gold, #e8b53a)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="#16181a"><path d="M8 5v14l11-7z" /></svg>
+            <span className="ytplay">
+              <svg width="26" height="26" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
             </span>
           )}
         </button>
         <button
           type="button"
+          className="ytfs-btn"
           onClick={toggleFullscreen}
           aria-label="Plein écran"
-          style={{
-            position: 'absolute', right: 10, bottom: 10, padding: '6px 10px',
-            border: '1px solid rgba(255,255,255,.4)', borderRadius: 4, background: 'rgba(0,0,0,.55)',
-            color: '#fff', cursor: 'pointer', fontSize: 12, fontFamily: "'Space Mono', monospace",
-          }}
         >
           {isFs ? '✕ Quitter' : '⛶ Plein écran'}
         </button>
@@ -191,16 +178,16 @@ export default function LocalVideoPlayer({ src, onComplete, endAt = 0 }) {
       <div
         ref={barRef}
         onClick={seekFromBar}
+        className="vbar"
         title="Vous pouvez revoir la partie déjà regardée"
-        style={{ position: 'relative', height: 16, margin: '8px 0 4px', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
       >
-        <div style={{ position: 'absolute', left: 0, right: 0, height: 6, borderRadius: 4, background: 'rgba(0,0,0,.12)' }} />
+        <div className="vbar-track" />
         {/* zone déjà vue (navigable) */}
-        <div style={{ position: 'absolute', left: 0, width: `${pctSeen}%`, height: 6, borderRadius: 4, background: 'rgba(232,181,58,.45)' }} />
+        <div className="vbar-seen" style={{ width: `${pctSeen}%` }} />
         {/* progression courante */}
-        <div style={{ position: 'absolute', left: 0, width: `${pctCur}%`, height: 6, borderRadius: 4, background: 'var(--gold, #e8b53a)' }} />
+        <div className="vbar-cur" style={{ width: `${pctCur}%` }} />
         {/* curseur */}
-        <div style={{ position: 'absolute', left: `calc(${pctCur}% - 6px)`, width: 12, height: 12, borderRadius: '50%', background: 'var(--gold, #e8b53a)', boxShadow: '0 0 0 2px rgba(0,0,0,.15)' }} />
+        <div className="vbar-knob" style={{ left: `calc(${pctCur}% - 6px)` }} />
       </div>
 
       <div className="ytnote mono" style={{ display: 'flex', justifyContent: 'space-between' }}>

@@ -39,32 +39,26 @@ function MiniQuiz({ questions, onPass }) {
     setChecked(false);
   }
 
-  const box = { marginTop: 18, padding: 16, borderRadius: 10, background: 'var(--paper-2)', border: '1px solid var(--line)' };
-  const choiceBase = {
-    display: 'block', width: '100%', textAlign: 'left', padding: '10px 12px', marginTop: 8,
-    borderRadius: 8, border: '1px solid var(--line)', background: 'var(--card)', color: 'var(--ink)', cursor: 'pointer', fontSize: 15,
-  };
-
   return (
-    <div style={box}>
-      <h4 style={{ margin: '0 0 4px', fontFamily: "'Space Mono', monospace", textTransform: 'uppercase', letterSpacing: '.05em', fontSize: 13 }}>
+    <div className="mq">
+      <h4 className="mq-h">
         Quiz du module · {questions.length} questions
       </h4>
-      <p style={{ margin: '0 0 12px', fontSize: 14, opacity: .7 }}>Répondez correctement aux {questions.length} questions pour valider le module.</p>
+      <p className="mq-note">Répondez correctement aux {questions.length} questions pour valider le module.</p>
 
       {questions.map((q, qi) => (
-        <div key={qi} style={{ marginBottom: 14 }}>
-          <p style={{ fontWeight: 600, margin: '0 0 4px' }}>{qi + 1}. {q.q}</p>
+        <div key={qi} className="mq-q">
+          <p className="mq-qt">{qi + 1}. {q.q}</p>
           {q.choices.map((c, ci) => {
             const selected = answers[qi] === ci;
-            const style = { ...choiceBase };
-            if (selected) { style.borderColor = 'var(--gold, #e8b53a)'; style.background = 'rgba(232,181,58,.12)'; }
+            let cls = 'mq-choice';
+            if (selected) cls += ' sel';
             if (checked) {
-              if (ci === q.correct) { style.borderColor = '#2a9d57'; style.background = 'rgba(42,157,87,.12)'; }
-              else if (selected) { style.borderColor = '#c0392b'; style.background = 'rgba(192,57,43,.10)'; }
+              if (ci === q.correct) cls += ' ok';
+              else if (selected) cls += ' bad';
             }
             return (
-              <button type="button" key={ci} style={style} onClick={() => choose(qi, ci)} disabled={passedOnce}>
+              <button type="button" key={ci} className={cls} onClick={() => choose(qi, ci)} disabled={passedOnce}>
                 {c}{checked && ci === q.correct ? '  ✓' : ''}
               </button>
             );
@@ -73,12 +67,12 @@ function MiniQuiz({ questions, onPass }) {
       ))}
 
       {!passedOnce && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 6 }}>
+        <div className="mq-actions">
           <button type="button" className="btn gold" disabled={!allAnswered} onClick={submit}>
             Valider mes réponses
           </button>
           {checked && !passed && (
-            <span style={{ color: '#c0392b', fontSize: 14 }}>
+            <span className="mq-err">
               {score}/{questions.length} — certaines réponses sont fausses, corrigez-les puis revalidez.
             </span>
           )}
@@ -88,7 +82,7 @@ function MiniQuiz({ questions, onPass }) {
         </div>
       )}
       {passedOnce && (
-        <div style={{ color: '#2a9d57', fontWeight: 600, marginTop: 6 }}>
+        <div className="mq-pass">
           ✓ Quiz réussi ({questions.length}/{questions.length}) — module validé.
         </div>
       )}
