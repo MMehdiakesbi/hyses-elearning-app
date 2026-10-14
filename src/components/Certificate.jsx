@@ -51,9 +51,9 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
 
   const emailMsg = {
     sending: '⏳ Envoi de l’attestation par email…',
-    sent: '📧 Une copie PDF a été envoyée par email au stagiaire (copie à HYSES).',
-    notconfigured: 'ℹ️ L’envoi automatique par email n’est pas encore activé (clé Resend à renseigner). En attendant, téléchargez le PDF ci-dessous.',
-    error: '⚠ L’email n’a pas pu être envoyé automatiquement. Le PDF reste téléchargeable ci-dessous.',
+    sent: '📧 Une copie de l’attestation (Word) a été envoyée par email au stagiaire (copie à HYSES).',
+    notconfigured: 'ℹ️ L’envoi automatique par email n’est pas activé. Téléchargez votre attestation (Word) ci-dessous.',
+    error: '⚠ L’email n’a pas pu être envoyé automatiquement. L’attestation (Word) reste téléchargeable ci-dessous.',
     idle: '',
   }[emailState] || '';
 

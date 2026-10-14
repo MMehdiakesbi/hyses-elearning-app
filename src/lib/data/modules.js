@@ -12,13 +12,17 @@
 //  Si les deux sont null -> l'UI affiche un encart "video a venir".
 // =====================================================================
 
+// Videos auto-hebergees : bucket public Supabase Storage « videos »
+// (le dossier public/videos n'est pas versionne, donc absent du deploiement).
+const VIDEOS = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/videos`;
+
 export const MODULES = [
   {
     day: 'Module 1 · Introduction',
     t: 'Présentation de la formation',
     youtube: null,
     youtubeStart: null,
-    video: '/videos/module1.mp4',
+    video: `${VIDEOS}/module1.mp4`,
     p: "Objectifs, déroulé et cadre de la formation H0 B0 H0V (7 heures) pour le personnel non électricien. Elle prépare à analyser le risque électrique, intégrer la prévention dans le travail et appliquer les instructions de l'employeur.",
     li: [
       "Objectifs : analyser le risque, intégrer la prévention, mettre en œuvre les mesures et instructions de l'employeur, connaître les dangers et la conduite à tenir en cas d'accident ou d'incendie",
@@ -36,7 +40,7 @@ export const MODULES = [
     t: 'Les risques électriques',
     youtube: null,
     youtubeStart: null,
-    video: '/videos/module2.mp4',
+    video: `${VIDEOS}/module2.mp4`,
     p: "Pourquoi le risque électrique est si grave : statistiques, obligations réglementaires et différents types de contacts dangereux.",
     li: [
       "Statistiques (INRS) : les accidents du travail d'origine électrique sont rares mais souvent graves, voire mortels",
@@ -55,7 +59,7 @@ export const MODULES = [
     t: 'Les effets du courant électrique',
     youtube: null,
     youtubeStart: null,
-    video: '/videos/module3.mp4',
+    video: `${VIDEOS}/module3.mp4`,
     p: "Notions de base (tension, intensité, résistance) et effets du courant électrique sur le corps humain.",
     li: [
       "Le courant naît d'une différence de potentiel (tension U) ; sans tension, pas de courant (similitude avec la chute d'eau)",
@@ -74,7 +78,7 @@ export const MODULES = [
     t: 'Les habilitations électriques',
     youtube: null,
     youtubeStart: null,
-    video: '/videos/module4.mp4',
+    video: `${VIDEOS}/module4.mp4`,
     p: "Définition de l'habilitation, symboles (B0 / H0 / H0V), titre d'habilitation et rôles des différents acteurs.",
     li: [
       "L'habilitation est la reconnaissance, par l'employeur, de la capacité d'une personne à accomplir des tâches en sécurité (NF C 18-510)",
@@ -154,7 +158,7 @@ export const MODULES = [
     t: "La conduite à tenir en cas d'accident",
     youtube: null,
     youtubeStart: null,
-    video: '/videos/module8.mp4',
+    video: `${VIDEOS}/module8.mp4`,
     p: "Réagir face à un accident corporel ou à un incendie d'origine électrique, dans le bon ordre.",
     li: [
       "Incendies — sources d'ignition : foudre, échauffements, électricité statique, surintensité, projections, étincelles",

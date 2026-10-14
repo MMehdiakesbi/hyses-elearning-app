@@ -1,8 +1,15 @@
-export default function Logo({ size = 26, color = '#4f46e5' }) {
+// Logo officiel HYSES (public/hyses-logo.png, triangle blanc sur fond ardoise).
+// Le parametre `color` est conserve pour compatibilite avec les appels existants
+// mais n'a plus d'effet : le logo officiel ne se recolore pas.
+// eslint-disable-next-line no-unused-vars
+export default function Logo({ size = 32, color }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path d="M12 2 L22 20 H2 Z" stroke={color} strokeWidth="2.2" strokeLinejoin="round" />
-      <path d="M13 7 L8 13 H11.5 L11 17 L16 11 H12.5 Z" fill={color} />
-    </svg>
+    <img
+      src="/hyses-logo.png"
+      width={size}
+      height={size}
+      alt="HYSES"
+      style={{ display: 'inline-block', verticalAlign: 'middle', borderRadius: Math.round(size * 0.18), flexShrink: 0 }}
+    />
   );
 }

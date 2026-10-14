@@ -193,7 +193,7 @@ export default function LocalVideoPlayer({ src, onComplete, endAt = 0 }) {
       <div className="ytnote mono" style={{ display: 'flex', justifyContent: 'space-between' }}>
         <span>
           {errored
-            ? '⚠ Vidéo introuvable — vérifiez le fichier dans public/videos/'
+            ? '⚠ Vidéo momentanément indisponible — rechargez la page ou contactez Contact.hyses@gmail.com'
             : seen >= (dur ? dur * 0.95 : Infinity)
               ? '✓ Vidéo visionnée — vous pouvez revoir librement'
               : 'Vous pouvez reculer pour revoir ; impossible d’avancer plus loin'}

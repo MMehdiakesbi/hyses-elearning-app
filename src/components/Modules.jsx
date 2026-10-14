@@ -5,6 +5,7 @@ import { MODULES } from '@/lib/data/modules';
 import { MODULE_QUIZZES } from '@/lib/data/moduleQuizzes';
 import YouTubePlayer from '@/components/YouTubePlayer';
 import LocalVideoPlayer from '@/components/LocalVideoPlayer';
+import { MODE_RECETTE } from '@/lib/recette';
 
 // Couper la fin (écran noir) de certaines vidéos locales.
 // Clé = numéro de module (1..9), valeur = secondes où arrêter la vidéo.
@@ -165,7 +166,19 @@ export default function Modules({ done = [], onValidate }) {
               {isDone ? (
                 <button className="btn ghost" disabled>✓ Module validé</button>
               ) : !videoSeen ? (
-                <button className="btn" disabled>🔒 Regardez la vidéo pour accéder au quiz</button>
+                <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                  <button className="btn" disabled>🔒 Regardez la vidéo pour accéder au quiz</button>
+                  {MODE_RECETTE && (
+                    <button
+                      type="button"
+                      className="btn ghost"
+                      data-testid="recette-skip-video"
+                      onClick={(e) => { e.stopPropagation(); markWatched(i); }}
+                    >
+                      [Recette] Marquer la vidéo comme vue
+                    </button>
+                  )}
+                </div>
               ) : quiz.length > 0 ? (
                 <MiniQuiz questions={quiz} onPass={() => validate(i)} />
               ) : (
