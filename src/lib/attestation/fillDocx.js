@@ -16,16 +16,6 @@ function b64ToUint8(b64) {
   for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
   return u;
 }
-const pad = (n) => String(n).padStart(2, '0');
-const shortDate = (d) => {
-  const x = d ? new Date(d) : new Date();
-  return `${pad(x.getDate())}/${pad(x.getMonth() + 1)}/${x.getFullYear()}`;
-};
-const shortPlus = (d, y) => {
-  const x = d ? new Date(d) : new Date();
-  x.setFullYear(x.getFullYear() + y);
-  return `${pad(x.getDate())}/${pad(x.getMonth() + 1)}/${x.getFullYear()}`;
-};
 const escapeXml = (s) =>
   String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
@@ -39,7 +29,8 @@ export async function buildAttestationDocxBlob(learner) {
   const vals = {
     '{{PRENOM}}': cap(learner.prenom) || '',
     '{{NOM}}': (learner.nom || '').toUpperCase(),
-    '{{FONCTION}}': fonction,
+    // Titre d'habilitation : fonction pre-remplie, ou ligne pointillee si vide.
+    '{{FONCTION}}': fonction || '.........................................',
     // Segments conditionnels : pas de « occupant le poste de  chez » si un champ est vide.
     '{{POSTE}}': fonction
       ? `, occupant le poste de ${fonction}`
@@ -47,8 +38,6 @@ export async function buildAttestationDocxBlob(learner) {
     '{{CHEZ}}': fonction && entreprise ? ` chez ${entreprise}` : '',
     '{{SCORE}}': String(learner.score ?? ''),
     '{{DATE}}': dateLong,
-    '{{DATE_OBT}}': shortDate(learner.date),
-    '{{VALIDITE}}': shortPlus(learner.date, 3),
     '{{DATE_FAIT}}': dateLong,
   };
   for (const [k, v] of Object.entries(vals)) {
