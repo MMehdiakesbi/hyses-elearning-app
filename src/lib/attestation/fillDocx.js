@@ -34,11 +34,18 @@ export async function buildAttestationDocxBlob(learner) {
   let xml = await zip.file('word/document.xml').async('string');
 
   const dateLong = frDate(learner.date);
+  const fonction = (learner.fonction || '').trim();
+  const entreprise = (learner.entreprise || '').trim();
   const vals = {
     '{{PRENOM}}': cap(learner.prenom) || '',
     '{{NOM}}': (learner.nom || '').toUpperCase(),
-    '{{FONCTION}}': learner.fonction || '',
-    '{{ENTREPRISE}}': learner.entreprise || '',
+    '{{FONCTION}}': fonction,
+    // Segments conditionnels : pas de « occupant le poste de  chez » si un champ est vide.
+    '{{POSTE}}': fonction
+      ? `, occupant le poste de ${fonction}`
+      : entreprise ? `, de la société ${entreprise}` : '',
+    '{{CHEZ}}': fonction && entreprise ? ` chez ${entreprise}` : '',
+    '{{SCORE}}': String(learner.score ?? ''),
     '{{DATE}}': dateLong,
     '{{DATE_OBT}}': shortDate(learner.date),
     '{{VALIDITE}}': shortPlus(learner.date, 3),

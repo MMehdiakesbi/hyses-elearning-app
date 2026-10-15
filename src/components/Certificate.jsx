@@ -12,7 +12,6 @@ const shortPlus = (d, y) => { const x = d ? new Date(d) : new Date(); x.setFullY
 
 export default function Certificate({ learner, emittedAt, onEmitted }) {
   const [emailState, setEmailState] = useState(emittedAt ? 'sent' : 'idle');
-  const [busy, setBusy] = useState(false);
   const sentOnce = useRef(Boolean(emittedAt));
 
   const dateLong = frDate(learner.date);
@@ -22,7 +21,6 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
   const prenom = cap(learner.prenom);
 
   async function sendEmail() {
-    setBusy(true);
     setEmailState('sending');
     try {
       const pdfBase64 = await getAttestationDocxBase64(learner);
@@ -39,8 +37,6 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
     } catch (e) {
       console.error('[email attestation]', e);
       setEmailState('error');
-    } finally {
-      setBusy(false);
     }
   }
 
@@ -49,13 +45,16 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const emailMsg = {
-    sending: '⏳ Envoi de l’attestation par email…',
-    sent: '📧 Une copie de l’attestation (Word) a été envoyée par email au stagiaire (copie à HYSES).',
-    notconfigured: 'ℹ️ L’envoi automatique par email n’est pas activé. Téléchargez votre attestation (Word) ci-dessous.',
-    error: '⚠ L’email n’a pas pu être envoyé automatiquement. L’attestation (Word) reste téléchargeable ci-dessous.',
-    idle: '',
-  }[emailState] || '';
+  // Le stagiaire ne voit jamais d'erreur technique : si l'email ne part pas
+  // (non configure, refuse...), on l'oriente simplement vers le telechargement.
+  const emailMsg = emailState === 'sent'
+    ? '📧 Une copie de l’attestation (Word) a été envoyée par email au stagiaire (copie à HYSES).'
+    : 'Votre attestation est disponible au téléchargement ci-dessous.';
+
+  async function download() {
+    await downloadAttestationDocx(learner);
+    if (!emittedAt) onEmitted?.(new Date().toISOString());
+  }
 
   return (
     <>
@@ -77,8 +76,8 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
           <p>
             Nous attestons par la présente que <span className="name">{prenom} {nom}</span>
             {learner.fonction && learner.fonction.toLowerCase() !== 'stagiaire'
-              ? `, occupant le poste de ${learner.fonction.toLowerCase()}` : ''}
-            {learner.entreprise ? ` chez ${learner.entreprise}` : ''}, a suivi avec succès la formation
+              ? `, occupant le poste de ${learner.fonction.toLowerCase()}${learner.entreprise ? ` chez ${learner.entreprise}` : ''}`
+              : learner.entreprise ? `, de la société ${learner.entreprise}` : ''}, a suivi avec succès la formation
             intitulée <b>« SENSIBILISATION AUX RISQUES ELECTRIQUE NIVEAU B0 H0V initial »</b>.
           </p>
           <p>
@@ -120,17 +119,12 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
         </div>
       </div>
 
-      {emailMsg && (
-        <div className="banner no-print"><span>{emailMsg}</span></div>
-      )}
+      <div className="banner no-print"><span>{emailMsg}</span></div>
 
       <div className="footnav no-print">
         <span className="note">Document officiel — à imprimer puis signer (titulaire, employeur, HYSES).</span>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          {emailState === 'error' && (
-            <button className="btn ghost" onClick={sendEmail} disabled={busy}>Renvoyer par email</button>
-          )}
-          <button className="btn" onClick={() => downloadAttestationDocx(learner)}>⬇ Télécharger l’attestation (Word)</button>
+          <button className="btn" onClick={download}>⬇ Télécharger l’attestation (Word)</button>
         </div>
       </div>
     </>

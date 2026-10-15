@@ -1062,6 +1062,34 @@ html[data-theme="dark"] .hv-footer { background: var(--paper-2); }
 }
 
 /* ============================================================
+   En-têtes : place réservée aux contrôles flottants (langue +
+   thème, fixés en haut à droite) pour qu'ils ne recouvrent
+   jamais les boutons de l'en-tête.
+   ============================================================ */
+@media (max-width: 1540px) {
+  .hv-bar-in { padding-right: 190px; }
+}
+@media (max-width: 1240px) {
+  .bar-in { padding-right: 214px; }
+}
+@media (max-width: 760px) {
+  /* Sélecteur de langue compact : globe seul */
+  .lang-label, .lang-chevron { display: none; }
+  .lang-btn { padding: 8px 10px; }
+  .hv-bar-in { padding-right: 100px; gap: 12px; }
+  /* En-tête formation sur deux lignes : logo / identité + boutons */
+  .bar-in { flex-wrap: wrap; row-gap: 5px; padding-right: 16px; }
+  .bar-in .bar-spacer { flex-basis: 100%; height: 0; } /* retour à la ligne après le logo */
+  .bar-in .who { flex: 1; text-align: left; }
+  .bar-in .logout { margin-left: 0; }
+}
+@media (max-width: 560px) {
+  /* « Demander un devis » reste disponible dans le bandeau d'accueil */
+  .hv-bar-cta .hv-btn { display: none; }
+  .hv-link { white-space: nowrap; font-size: 14px; }
+}
+
+/* ============================================================
    IMPRESSION — attestation
    ============================================================ */
 @media print {

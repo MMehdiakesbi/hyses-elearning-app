@@ -80,7 +80,7 @@ export default function LangSwitcher() {
             <path d="M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z" />
           </svg>
         </span>
-        <span>{cur.label}</span>
+        <span className="lang-label">{cur.label}</span>
         <span className="lang-chevron">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <path d="M6 9l6 6 6-6" />
