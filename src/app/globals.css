@@ -578,6 +578,8 @@ h1.title .sym { color: var(--accent); }
 .cert-grid div:nth-child(odd) { border-right: 1px solid var(--cert-line); background: var(--cert-alt); }
 .cert-grid b { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--cert-mute); display: block; margin-bottom: 4px; }
 .cert-grid s { text-decoration: none; font-size: 14px; font-weight: 600; color: var(--cert-ink); }
+.cert-grid s.blank { display: block; height: 16px; border-bottom: 1.5px dotted var(--cert-mute); }
+.cert-recyc { margin-top: 18px; font-size: 13px; color: var(--cert-ink); }
 .practical {
   margin-top: 18px;
   border: 1px dashed var(--accent);

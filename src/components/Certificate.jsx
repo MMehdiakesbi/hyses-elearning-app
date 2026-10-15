@@ -6,17 +6,18 @@ import { cap, frDate } from '@/lib/format';
 import { TOTAL_QUESTIONS } from '@/lib/data/quiz';
 import { downloadAttestationDocx, getAttestationDocxBase64, attestationDocxFilename } from '@/lib/attestation/fillDocx';
 
-const pad = (n) => String(n).padStart(2, '0');
-const shortDate = (d) => { const x = d ? new Date(d) : new Date(); return `${pad(x.getDate())}/${pad(x.getMonth() + 1)}/${x.getFullYear()}`; };
-const shortPlus = (d, y) => { const x = d ? new Date(d) : new Date(); x.setFullYear(x.getFullYear() + y); return `${pad(x.getDate())}/${pad(x.getMonth() + 1)}/${x.getFullYear()}`; };
+// Champ du titre d'habilitation laisse a blanc (rempli par l'employeur).
+const Blank = () => <s className="blank" aria-label="à compléter" />;
 
 export default function Certificate({ learner, emittedAt, onEmitted }) {
-  const [emailState, setEmailState] = useState(emittedAt ? 'sent' : 'idle');
+  // emittedAt = attestation deja emise (email OU telechargement) : on ne renvoie
+  // pas l'email, mais on n'affiche « envoyé » que pour un envoi reel de cette session.
+  const [emailState, setEmailState] = useState('idle');
   const sentOnce = useRef(Boolean(emittedAt));
 
   const dateLong = frDate(learner.date);
-  const dateShort = shortDate(learner.date);
-  const validite = shortPlus(learner.date, 3);
+  const fonction = (learner.fonction || '').trim();
+  const entreprise = (learner.entreprise || '').trim();
   const nom = (learner.nom || '').toUpperCase();
   const prenom = cap(learner.prenom);
 
@@ -73,56 +74,56 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
 
           <h2>Attestation de Formation</h2>
 
+          {/* Meme texte que l'attestation Word (src/lib/attestation). */}
           <p>
             Nous attestons par la présente que <span className="name">{prenom} {nom}</span>
-            {learner.fonction && learner.fonction.toLowerCase() !== 'stagiaire'
-              ? `, occupant le poste de ${learner.fonction.toLowerCase()}${learner.entreprise ? ` chez ${learner.entreprise}` : ''}`
-              : learner.entreprise ? `, de la société ${learner.entreprise}` : ''}, a suivi avec succès la formation
-            intitulée <b>« SENSIBILISATION AUX RISQUES ELECTRIQUE NIVEAU B0 H0V initial »</b>.
+            {fonction
+              ? `, occupant le poste de ${fonction}${entreprise ? ` chez ${entreprise}` : ''}`
+              : entreprise ? `, de la société ${entreprise}` : ''}, a suivi avec succès le module théorique en
+            ligne de la formation <b>« Sensibilisation aux risques électriques — niveau H0 B0 H0V initial »</b>.
           </p>
           <p>
-            Cette formation s’est déroulée <b>en ligne (module théorique)</b>, pour une durée totale de{' '}
-            <b>07 heures</b>, le {dateLong}. Elle a été menée conformément aux prescriptions de la norme{' '}
-            <b>NF C 18-510</b>.
+            Ce module, conforme aux prescriptions de la norme NF C 18-510, a été achevé en ligne le {dateLong}.
           </p>
           <p>
-            L’issue de la formation théorique en ligne est <b style={{ color: 'var(--safe)' }}>FAVORABLE</b>,
-            attestant de la réussite de {prenom} {nom} aux évaluations théoriques (QCM) — score :{' '}
-            <span className="name">{learner.score}/{TOTAL_QUESTIONS}</span>.
-          </p>
-          <p className="cert-conf">
-            La mise en situation pratique exigée par la norme NF C 18-510 est évaluée en présentiel ; le
-            titre d’habilitation ci-dessous est délivré par l’employeur.
+            L’issue de la formation théorique en ligne est <b style={{ color: 'var(--safe)' }}>FAVORABLE</b>.
+            SASU HYSES atteste que <span className="name">{prenom} {nom}</span> a suivi le module théorique en
+            ligne de la formation Habilitation électrique H0 B0 H0V (NF C 18-510) et a réussi l’évaluation
+            théorique (QCM) avec un résultat de <span className="name">{learner.score}/{TOTAL_QUESTIONS}</span>.
+            La formation et l’évaluation pratiques se déroulent en présentiel ; le titre d’habilitation est
+            délivré par l’employeur.
           </p>
 
           <div className="titre">
             <div className="titre-h mono">TITRE D’HABILITATION</div>
+            <p className="cert-conf">
+              À établir et signer par l’employeur, après la formation et l’évaluation pratiques en présentiel.
+            </p>
             <div className="cert-grid">
               <div><b>Nom</b><s>{nom}</s></div>
               <div><b>Prénom</b><s>{prenom}</s></div>
-              <div><b>Fonction</b><s>{learner.fonction || '—'}</s></div>
-              <div><b>Date d’obtention</b><s>{dateShort}</s></div>
-              <div><b>Symbole et attribut</b><s>B0 H0V — Opérations d’ordre non électrique</s></div>
-              <div><b>Validité</b><s>TBT/BT jusqu’au {validite} (3 ans)</s></div>
+              <div><b>Fonction</b>{fonction ? <s>{fonction}</s> : <Blank />}</div>
+              <div><b>Symbole et attribut</b><Blank /></div>
+              <div><b>Validité</b><Blank /></div>
+              <div><b>Date d’obtention</b><Blank /></div>
             </div>
           </div>
 
           <div className="sign">
             <div><div className="ln">Signature du titulaire</div></div>
             <div><div className="ln">L’employeur (nom, fonction, signature)</div></div>
-            <div><div className="ln">Pour HYSES — Jean-Marie EMMA</div></div>
           </div>
 
-          <div className="cert-foot">
-            Fait à Champs-sur-Marne, le {dateLong} · Représenté par Jean-Marie EMMA
-          </div>
+          <p className="cert-recyc">Recyclage recommandé : 3 ans</p>
+
+          <div className="cert-foot">Fait à Champs-sur-Marne, le {dateLong}</div>
         </div>
       </div>
 
       <div className="banner no-print"><span>{emailMsg}</span></div>
 
       <div className="footnav no-print">
-        <span className="note">Document officiel — à imprimer puis signer (titulaire, employeur, HYSES).</span>
+        <span className="note">Document officiel — à imprimer puis signer (titulaire, employeur).</span>
         <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
           <button className="btn" onClick={download}>⬇ Télécharger l’attestation (Word)</button>
         </div>
