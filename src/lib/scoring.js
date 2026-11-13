@@ -1,12 +1,13 @@
 // =====================================================================
-//  Logique d'evaluation : melange, construction d'ordre, notation.
-//  Fonctions pures (testables, reutilisables).
+//  Logique d'affichage du QCM : melange, construction d'ordre.
+//  Fonctions pures. La NOTATION se fait cote serveur uniquement
+//  (src/lib/server/grading.js) : la cle n'est pas envoyee au navigateur.
 //
 //  Format des reponses (`answers`) : objet { [indexQuestion]: number[] }
 //  ou number[] contient les indices d'options choisies.
 // =====================================================================
 
-import { QUIZ, PASS_THRESHOLD, TOTAL_QUESTIONS } from './data/quiz';
+import { QUIZ, TOTAL_QUESTIONS } from './data/quiz';
 
 /** Melange Fisher-Yates (copie, ne modifie pas l'original). */
 export function shuffle(arr) {
@@ -36,31 +37,6 @@ export function buildOrder(doShuffle) {
   });
 }
 
-/** Compare deux listes d'indices sans tenir compte de l'ordre. */
-function sameSet(a = [], b = []) {
-  const sa = [...a].sort((x, y) => x - y).join(',');
-  const sb = [...b].sort((x, y) => x - y).join(',');
-  return sa === sb;
-}
-
-/** Une question est-elle correctement repondue ? */
-export function isQuestionCorrect(qi, given) {
-  return sameSet(given, QUIZ[qi].c);
-}
-
-/**
- * Calcule le score total (nombre de bonnes reponses).
- * @param {Object<number, number[]>} answers
- * @returns {number}
- */
-export function gradeAnswers(answers) {
-  let score = 0;
-  QUIZ.forEach((_, qi) => {
-    if (isQuestionCorrect(qi, answers[qi] || [])) score++;
-  });
-  return score;
-}
-
 /** Index de la premiere question sans reponse, ou -1 si tout est repondu. */
 export function firstUnanswered(order, answers) {
   for (let pos = 0; pos < order.length; pos++) {
@@ -68,11 +44,6 @@ export function firstUnanswered(order, answers) {
     if (!answers[qi] || answers[qi].length === 0) return pos;
   }
   return -1;
-}
-
-/** Reussite (>= seuil). */
-export function isPass(score) {
-  return score >= PASS_THRESHOLD;
 }
 
 /** Pourcentage arrondi. */

@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import Logo from '@/components/Logo';
 import { cap, frDate } from '@/lib/format';
 import { TOTAL_QUESTIONS } from '@/lib/data/quiz';
-import { downloadAttestationDocx, getAttestationDocxBase64, attestationDocxFilename } from '@/lib/attestation/fillDocx';
 
 // Champ du titre d'habilitation laisse a blanc (rempli par l'employeur).
 const Blank = () => <s className="blank" aria-label="à compléter" />;
@@ -24,17 +23,13 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
   async function sendEmail() {
     setEmailState('sending');
     try {
-      const pdfBase64 = await getAttestationDocxBase64(learner);
-      const res = await fetch('/api/attestation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileBase64: pdfBase64, filename: attestationDocxFilename(learner), prenom: learner.prenom, score: learner.score }),
-      });
-      const json = await res.json();
+      // Le serveur genere le document a partir de la base et l'envoie.
+      const res = await fetch('/api/attestation', { method: 'POST' });
+      const json = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(json.error || 'Echec envoi');
-      if (json.skipped) { setEmailState('notconfigured'); return; }
+      if (!json.ok) { setEmailState('notconfigured'); return; }
       setEmailState('sent');
-      onEmitted?.(new Date().toISOString());
+      onEmitted?.(json.emittedAt);
     } catch (e) {
       console.error('[email attestation]', e);
       setEmailState('error');
@@ -52,9 +47,28 @@ export default function Certificate({ learner, emittedAt, onEmitted }) {
     ? '📧 Une copie de l’attestation (Word) a été envoyée par email au stagiaire (copie à HYSES).'
     : 'Votre attestation est disponible au téléchargement ci-dessous.';
 
+  // Telechargement du Word genere par le serveur (verifie que l'examen est reussi).
   async function download() {
-    await downloadAttestationDocx(learner);
-    if (!emittedAt) onEmitted?.(new Date().toISOString());
+    try {
+      const res = await fetch('/api/attestation', { cache: 'no-store' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const blob = await res.blob();
+      const name =
+        /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] ||
+        'Attestation_B0H0V.docx';
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      const at = res.headers.get('X-Attestation-Emitted-At');
+      if (at && !emittedAt) onEmitted?.(at);
+    } catch (e) {
+      console.error('[telechargement attestation]', e);
+    }
   }
 
   return (

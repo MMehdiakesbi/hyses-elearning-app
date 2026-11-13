@@ -1,48 +1,31 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
-import { createClient } from '@/lib/supabase/server';
+import { getSessionUser } from '@/lib/server/session';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { createProgressRepo } from '@/lib/server/progressRepo';
+import { downloadAttestation, emailAttestation } from '@/lib/server/attestationService';
+import { DOCX_MIME } from '@/lib/server/attestationDocx';
 
-// Envoi de l'attestation par email.
-//
-// SECURITE :
-//  - On verifie cote serveur que l'appelant est bien authentifie.
-//  - Le destinataire est TOUJOURS l'email du compte connecte
-//    (user.email), jamais une adresse fournie par le client.
-//
-// NOTE MVP : le PDF est genere cote navigateur puis transmis ici.
-// Durcissement futur possible : generer le PDF et corriger le QCM
-// cote serveur pour eviter toute falsification.
-export async function POST(request) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+// Attestation generee par le SERVEUR a partir de la base, seulement si
+// l'examen est reussi (passed = true, ecrit par /api/exam/submit).
+//  - GET  : telechargement du Word.
+//  - POST : envoi par email a l'adresse du compte connecte.
+// Aucune donnee du corps de la requete n'est lue (ni fichier, ni score).
 
-    if (!user) {
-      return NextResponse.json({ error: 'Non authentifie' }, { status: 401 });
-    }
+const escapeHtml = (s) =>
+  String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-    if (!process.env.RESEND_API_KEY) {
-      // Email non configure : ce n'est pas une erreur bloquante.
-      // L'attestation reste telechargeable cote navigateur.
-      return NextResponse.json({ ok: false, skipped: true, reason: 'email_non_configure' });
-    }
+function resendMailer() {
+  if (!process.env.RESEND_API_KEY) return null;
+  const resend = new Resend(process.env.RESEND_API_KEY);
+  const from = process.env.RESEND_FROM || 'HYSES Formation <onboarding@resend.dev>';
+  const bcc = process.env.RESEND_BCC ? [process.env.RESEND_BCC] : undefined;
 
-    const { fileBase64, pdfBase64, filename, prenom, score } = await request.json();
-    const content = fileBase64 || pdfBase64;
-    if (!content || !filename) {
-      return NextResponse.json({ error: 'Donnees du fichier manquantes' }, { status: 400 });
-    }
-
-    const resend = new Resend(process.env.RESEND_API_KEY);
-    const from = process.env.RESEND_FROM || 'HYSES Formation <onboarding@resend.dev>';
-    const bcc = process.env.RESEND_BCC ? [process.env.RESEND_BCC] : undefined;
-
+  return async ({ to, prenom, score, filename, content }) => {
     const html = `
       <div style="font-family:Arial,sans-serif;color:#16181a;max-width:560px">
         <h2 style="color:#a9760f">Votre attestation de formation</h2>
-        <p>Bonjour ${prenom || ''},</p>
+        <p>Bonjour ${escapeHtml(prenom)},</p>
         <p>Felicitations : vous avez valide la partie <strong>theorique + QCM</strong> de la
         formation <strong>Habilitation electrique B0 H0V</strong> (NF C 18-510)${
           typeof score === 'number' ? ` avec un score de ${score}/13` : ''
@@ -58,21 +41,50 @@ export async function POST(request) {
 
     const { error } = await resend.emails.send({
       from,
-      to: [user.email],
+      to: [to],
       bcc,
       subject: 'Votre attestation de formation B0 H0V — HYSES',
       html,
       attachments: [{ filename, content }],
     });
+    if (error) throw new Error(error.message || 'Echec envoi Resend');
+  };
+}
 
-    if (error) {
-      console.error('[resend]', error);
-      return NextResponse.json({ error: error.message || 'Echec envoi' }, { status: 502 });
-    }
+export async function GET() {
+  try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: 'Non authentifie' }, { status: 401 });
 
-    return NextResponse.json({ ok: true });
+    const repo = createProgressRepo(createAdminClient());
+    const r = await downloadAttestation({ userId: user.id, repo });
+    if (r.status !== 200) return NextResponse.json(r.body, { status: r.status });
+
+    return new NextResponse(r.file, {
+      status: 200,
+      headers: {
+        'Content-Type': DOCX_MIME,
+        'Content-Disposition': `attachment; filename="${r.filename}"`,
+        'Cache-Control': 'private, no-store',
+        'X-Attestation-Emitted-At': r.emittedAt || '',
+      },
+    });
   } catch (e) {
-    console.error('[api/attestation]', e);
+    console.error('[api/attestation GET]', e?.message || e);
+    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  }
+}
+
+export async function POST() {
+  try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: 'Non authentifie' }, { status: 401 });
+
+    const repo = createProgressRepo(createAdminClient());
+    const r = await emailAttestation({ userId: user.id, email: user.email, repo, mailer: resendMailer() });
+    return NextResponse.json(r.body, { status: r.status });
+  } catch (e) {
+    console.error('[api/attestation POST]', e?.message || e);
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }

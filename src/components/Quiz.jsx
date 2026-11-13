@@ -7,11 +7,12 @@ import { QUIZ } from '@/lib/data/quiz';
  * Quiz une-question-à-la-fois.
  *  - Réponse unique  : la sélection fait passer automatiquement à la suivante.
  *  - Choix multiples : bouton « Suivant » (activé dès qu'une case est cochée).
- *  - review = true   : mode correction (verdicts + navigation libre).
+ *  - review = true   : mode correction (verdicts + navigation libre) ; le corrige
+ *    `correction` ({ [qi]: number[] }) est fourni par le serveur apres notation.
  *
- * Props : order, answers, onChange(qi, arr), onFinish(), review, idPrefix
+ * Props : order, answers, onChange(qi, arr), onFinish(), review, correction, idPrefix
  */
-export default function Quiz({ order, answers, onChange, onFinish, review = false, idPrefix = 'q' }) {
+export default function Quiz({ order, answers, onChange, onFinish, review = false, correction = null, idPrefix = 'q' }) {
   const [current, setCurrent] = useState(0);
   const [advancing, setAdvancing] = useState(false);
   const timer = useRef(null);
@@ -27,8 +28,9 @@ export default function Quiz({ order, answers, onChange, onFinish, review = fals
   const n = order.length;
   const row = order[current];
   const Q = QUIZ[row.qi];
-  const multi = Q.c.length > 1;
+  const multi = Boolean(Q.multi);
   const given = answers[row.qi] || [];
+  const key = (review && correction?.[row.qi]) || [];
 
   useEffect(() => () => timer.current && clearTimeout(timer.current), []);
 
@@ -57,7 +59,7 @@ export default function Quiz({ order, answers, onChange, onFinish, review = fals
   }
 
   const correct =
-    review && [...given].sort().join(',') === [...Q.c].sort().join(',');
+    review && [...given].sort().join(',') === [...key].sort().join(',');
   const pct = Math.round(((current + 1) / n) * 100);
 
   return (
@@ -76,7 +78,7 @@ export default function Quiz({ order, answers, onChange, onFinish, review = fals
 
         {row.opts.map((oi) => {
           const picked = given.includes(oi);
-          const isCorrect = Q.c.includes(oi);
+          const isCorrect = key.includes(oi);
           let cls = 'opt' + (multi ? ' multi' : '');
           if (review) {
             if (isCorrect) cls += ' ok';
@@ -103,7 +105,7 @@ export default function Quiz({ order, answers, onChange, onFinish, review = fals
           <div className={'verdict ' + (correct ? 'ok' : 'bad')}>
             {correct
               ? '✓ Bonne réponse'
-              : '✗ Réponse attendue : ' + Q.c.map((i) => Q.o[i]).join(', ')}
+              : '✗ Réponse attendue : ' + key.map((i) => Q.o[i]).join(', ')}
           </div>
         )}
       </div>

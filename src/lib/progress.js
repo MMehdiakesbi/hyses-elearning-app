@@ -4,7 +4,12 @@
 //  Le RLS garantit qu'un stagiaire ne touche que sa propre ligne.
 // =====================================================================
 
-/** Met a jour la ligne progress du stagiaire. */
+/**
+ * Met a jour la ligne progress du stagiaire. Seules colonnes autorisees au
+ * navigateur : modules_done, time_spent_seconds (+ updated_at). Les resultats
+ * (scores, reussite, tentatives, dates d'examen et d'emission) sont ecrits par
+ * le serveur ; la base refuse toute autre colonne (voir supabase/migrations).
+ */
 export async function saveProgress(supabase, userId, patch) {
   const { error } = await supabase
     .from('progress')

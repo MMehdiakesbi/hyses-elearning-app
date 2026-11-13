@@ -7,19 +7,29 @@ import Modules from '@/components/Modules';
 import Certificate from '@/components/Certificate';
 import { createClient } from '@/lib/supabase/client';
 import { MODULES } from '@/lib/data/modules';
-import { PASS_THRESHOLD, TOTAL_QUESTIONS } from '@/lib/data/quiz';
-import {
-  buildOrder,
-  gradeAnswers,
-  firstUnanswered,
-  isPass,
-  toPercent,
-} from '@/lib/scoring';
+import { PASS_THRESHOLD, TOTAL_QUESTIONS, EXAM_MAX_ATTEMPTS } from '@/lib/data/quiz';
+import { buildOrder, firstUnanswered, toPercent } from '@/lib/scoring';
 import { saveProgress, saveProfile } from '@/lib/progress';
 import { humanDuration } from '@/lib/format';
 
-// Nombre de tentatives autorisees au quiz final (1er essai + reprises).
-const MAX_ATTEMPTS = 2;
+// Nombre de tentatives autorisees au quiz final (applique par le serveur).
+const MAX_ATTEMPTS = EXAM_MAX_ATTEMPTS;
+
+// Notation cote serveur : le navigateur envoie seulement les reponses cochees.
+async function postAnswers(url, answers) {
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers }),
+    });
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, json };
+  } catch (e) {
+    console.error('[' + url + ']', e);
+    return { ok: false, status: 0, json: {} };
+  }
+}
 
 const RAIL = {
   profile: 5,
@@ -67,6 +77,8 @@ export default function FormationApp({ user, profile: profile0, progress: progre
   const [reviewMode, setReviewMode] = useState(false);
   const [quizNote, setQuizNote] = useState('');
   const [hasTakenFinal, setHasTakenFinal] = useState(false);
+  const [correction, setCorrection] = useState(null); // corrige renvoye par le serveur
+  const submitting = useRef(false); // evite un double envoi (double clic)
 
   // Profil (formulaire de completion)
   const [form, setForm] = useState({
@@ -121,14 +133,21 @@ export default function FormationApp({ user, profile: profile0, progress: progre
       document.getElementById(`pos-q${u}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    const score = gradeAnswers(posAnswers);
-    await saveProgress(supabase, user.id, {
-      positioning_score: score,
-      positioning_done: true,
-      time_spent_seconds: computeTime(),
-    });
-    patchProgress({ positioning_score: score, positioning_done: true });
-    go('pos-done');
+    if (submitting.current) return;
+    submitting.current = true;
+    try {
+      const { ok, status, json } = await postAnswers('/api/positioning/submit', posAnswers);
+      // 409 = positionnement deja enregistre (autre onglet) : on reprend le score serveur.
+      if (!ok && status !== 409) {
+        setPosNote('⚠ Enregistrement impossible. Vérifiez votre connexion puis réessayez.');
+        return;
+      }
+      patchProgress({ positioning_score: json.score ?? null, positioning_done: true });
+      await saveProgress(supabase, user.id, { time_spent_seconds: computeTime() });
+      go('pos-done');
+    } finally {
+      submitting.current = false;
+    }
   }
 
   // ---- Modules ----
@@ -165,27 +184,38 @@ export default function FormationApp({ user, profile: profile0, progress: progre
       document.getElementById(`final-q${u}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
-    const score = gradeAnswers(finalAnswers);
-    const passed = isPass(score);
-    const nowIso = new Date().toISOString();
-    const newAttempts = (progress.final_attempts || 0) + 1;
-    await saveProgress(supabase, user.id, {
-      final_score: score,
-      final_done: true,
-      passed,
-      final_attempts: newAttempts,
-      finished_at: nowIso,
-      time_spent_seconds: computeTime(),
-    });
-    patchProgress({
-      final_score: score,
-      final_done: true,
-      passed,
-      final_attempts: newAttempts,
-      finished_at: nowIso,
-    });
-    setHasTakenFinal(true);
-    go('score');
+    if (submitting.current) return;
+    submitting.current = true;
+    try {
+      const { ok, json } = await postAnswers('/api/exam/submit', finalAnswers);
+      if (ok) {
+        patchProgress({
+          final_score: json.score,
+          final_done: true,
+          passed: json.passed,
+          final_attempts: json.attempts,
+          finished_at: json.finishedAt,
+        });
+        setCorrection(json.correction);
+        setHasTakenFinal(true);
+      } else if (json.result) {
+        // Refus serveur (deja reussi / tentatives epuisees) : on affiche l'etat reel.
+        patchProgress({
+          final_score: json.result.score,
+          final_done: true,
+          passed: json.result.passed,
+          final_attempts: json.result.attempts,
+          finished_at: json.result.finishedAt,
+        });
+      } else {
+        setQuizNote('⚠ Enregistrement impossible. Vérifiez votre connexion puis réessayez.');
+        return;
+      }
+      await saveProgress(supabase, user.id, { time_spent_seconds: computeTime() });
+      go('score');
+    } finally {
+      submitting.current = false;
+    }
   }
 
   function reviewQuiz() {
@@ -193,9 +223,9 @@ export default function FormationApp({ user, profile: profile0, progress: progre
     go('quiz');
   }
 
-  async function onAttestationEmitted(ts) {
+  // Date d'emission posee par le serveur (/api/attestation) : mise a jour locale seulement.
+  function onAttestationEmitted(ts) {
     patchProgress({ attestation_emitted_at: ts });
-    await saveProgress(supabase, user.id, { attestation_emitted_at: ts });
   }
 
   // ---- Donnees attestation ----
@@ -372,6 +402,7 @@ export default function FormationApp({ user, profile: profile0, progress: progre
               onChange={(qi, a) => setFinalAnswers((s) => ({ ...s, [qi]: a }))}
               onFinish={reviewMode ? () => go('score') : gradeFinal}
               review={reviewMode}
+              correction={correction}
               idPrefix="final"
             />
           </div>

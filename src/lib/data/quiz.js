@@ -2,8 +2,10 @@
 //  Banque de questions — QCM Habilitation electrique B0 H0V
 //
 //  Source : QUIZ_B0H0V_HYSES.pdf (13 questions).
-//  Champ `c` = indices (base 0) des bonnes reponses (corrige verifie
-//  case par case sur le PDF source). Q5, Q6, Q11 = choix multiples.
+//  Fichier PUBLIC (envoye au navigateur) : questions et options SANS les
+//  bonnes reponses. La cle de correction est cote serveur uniquement :
+//  src/lib/server/examKey.js. `multi` = question a choix multiples
+//  (Q5, Q6, Q11), necessaire a l'affichage.
 //
 //  Le MEME QCM sert :
 //   - au test de positionnement (ordre d'origine, non melange)
@@ -16,16 +18,18 @@ export const TOTAL_QUESTIONS = 13;
 // 11/13 = 84,6 % (insuffisant). A reconfirmer avec le PDG.
 export const PASS_THRESHOLD = 12;
 
+// Nombre de tentatives autorisees au quiz final (1er essai + reprise).
+// Applique par le serveur (/api/exam/submit) ; le client ne fait qu'afficher.
+export const EXAM_MAX_ATTEMPTS = 2;
+
 export const QUIZ = [
   {
     q: "Le volt est l'unite de :",
     o: ['La tension', 'La resistance', 'Le Ohm', 'La puissance'],
-    c: [0],
   },
   {
     q: 'Que represente le symbole \u03A9 ?',
     o: ['La tension', 'La resistance', "L'intensite", 'La puissance'],
-    c: [1],
   },
   {
     q: 'Peut-il y avoir choc electrique sans contact ?',
@@ -35,12 +39,10 @@ export const QUIZ = [
       'Peut-etre selon les conditions climatiques',
       'Je ne sais pas',
     ],
-    c: [0],
   },
   {
     q: 'Pour la protection des personnes, la sensibilite du relais differentiel doit etre de :',
     o: ['30 mA', '300 mA', '500 mA', "Il n'y a pas d'amperage minimum"],
-    c: [0],
   },
   {
     q: 'Que faites-vous face a un electrise dans un poste transformateur ?',
@@ -50,12 +52,12 @@ export const QUIZ = [
       'Je mets ou je fais mettre le circuit hors tension',
       'Je quitte rapidement les lieux',
     ],
-    c: [0, 1, 2],
+    multi: true,
   },
   {
     q: 'En haute tension, qui peut entrer dans la zone 2 (voisinage renforce) ?',
     o: ['H0', 'B0', 'H0V', 'H1V'],
-    c: [2, 3],
+    multi: true,
   },
   {
     q: "L'executant non electricien peut-il executer une tache d'ordre electrique ?",
@@ -65,12 +67,10 @@ export const QUIZ = [
       'Non, dans aucune circonstance',
       "Oui en cas d'extreme urgence",
     ],
-    c: [1],
   },
   {
     q: 'Un non-electricien habilite a travailler en basse tension au voisinage a pour indice :',
     o: ['B0V', 'B2V', 'H1', 'H1B2V'],
-    c: [0],
   },
   {
     q: 'Un ouvrier non habilite travaille dans une zone a risque, doit-il etre surveille ?',
@@ -80,7 +80,6 @@ export const QUIZ = [
       "Cela depend de l'environnement",
       'Oui dans tous les cas',
     ],
-    c: [3],
   },
   {
     q: "Qui delivre le titre d'habilitation electrique ?",
@@ -90,21 +89,18 @@ export const QUIZ = [
       "L'employeur ou chef d'etablissement avec delegation",
       'Le formateur',
     ],
-    c: [2],
   },
   {
     q: 'En BT, qui peut entrer dans la zone de voisinage simple ?',
     o: ['B1V', 'B2', 'Seul et non habilite', 'B0V'],
-    c: [0, 3],
+    multi: true,
   },
   {
     q: 'Pour une canalisation aerienne HT a conducteur nu, la DLI est de :',
     o: ['3 m', '5 m', '7 m', '50 m'],
-    c: [3],
   },
   {
     q: "Quelle est la Distance Minimale d'Approche (DMA) pour une piece nue sous tension BT ?",
     o: ['0,10 m', '0,30 m', '2 m', '5 m'],
-    c: [1],
   },
 ];
